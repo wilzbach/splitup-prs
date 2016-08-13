@@ -22,9 +22,10 @@ The first command will show you all the files that are considered as changes.
 Under the hood it parses `git status` and filters for files in `public/content`.
 Note that to avoid merge conflicts the `index.yml` is ignored. If you start from scratch
 you can safely submit the `index.yml` once all your major PRs were accepted.
+To categorize the PRs the `-p` or `--prefix` flag is required:
 
 ```
-splitup-prs -p "[german]"
+splitup-prs --prefix "[german]"
 ```
 
 might print
