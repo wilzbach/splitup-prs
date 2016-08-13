@@ -52,6 +52,11 @@ git reset master 2> $err > $err
 
 files=$(git status --porcelain | cut -c4-)
 
+if [ -z $files ] ; then
+	echo "No changes."
+	exit 1
+fi
+
 # we might have some directories in here
 files=$(printf $files | xargs -0 -I {} find {} -type f | tr '\n' ' ')
 
@@ -72,7 +77,9 @@ for filename in $files ; do
 		continue
 	fi
 
-	shortFileName=$(echo "$filename" | sed 's!public/content/!!')
+	# there are some issues with using path as git branches, better replace them
+	# for visual beauty we strip of the filename too
+	shortFileName=$(echo "$filename" | sed 's!public/content/!!' | sed 's!/!_!g' | sed 's/[.].*$//')
 
 	echo "Adding file: $filename, with branch: $shortFileName"
 	if [ $SIMULATE -eq 1 ] ; then
@@ -83,6 +90,12 @@ for filename in $files ; do
 	# defensive removal of existing branches, it won't remove unmerged branches!
 	gb -d "$shortFileName" 2> /dev/null || true
 	git checkout -b $shortFileName
+
+	if [ $(git rev-parse --abbrev-ref HEAD) == "master" ] ; then
+		echo "Something went wrong when creating a new branch. Does the branch already exit?"
+		exit 1
+	fi
+
 	git add "$filename"
 
 	# commit & submit
