@@ -48,12 +48,12 @@ if [ -z "$PREFIX" ] ; then
 fi
 
 # unstages everything, so we can start from scratch
-git reset master
+git reset master 2> $err > $err
 
 files=$(git status --porcelain | cut -c4-)
 
 # we might have some directories in here
-files=$(echo $files | xargs -I {} find {} -type f | tr '\n' ' ')
+files=$(printf $files | xargs -0 -I {} find {} -type f | tr '\n' ' ')
 
 # using the CLI tool hub is the most convenient option, otherwise we will show a URL
 hubInstalled=$(which $program 2>/dev/null | grep -v "not found" | wc -l)
