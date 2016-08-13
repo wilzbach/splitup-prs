@@ -15,6 +15,7 @@ STEP_BY_STEP=1 			# only submit on PR per run
 #set -uexo
 
 echo "Warning. This tool is in alpha-phase and should be used with great care".
+err="/dev/null"
 
 # parse all options
 while [[ $# -gt 0 ]]
@@ -49,7 +50,10 @@ fi
 # unstages everything, so we can start from scratch
 git reset master
 
-files=$(git status --porcelain | cut -c4- | tr '\n' ' ')
+files=$(git status --porcelain | cut -c4-)
+
+# we might have some directories in here
+files=$(echo $files | xargs -I {} find {} -type f | tr '\n' ' ')
 
 # using the CLI tool hub is the most convenient option, otherwise we will show a URL
 hubInstalled=$(which $program 2>/dev/null | grep -v "not found" | wc -l)
@@ -68,14 +72,14 @@ for filename in $files ; do
 		continue
 	fi
 
-	echo "Adding: $filename"
+	shortFileName=$(echo "$filename" | sed 's!public/content/!!')
 
+	echo "Adding file: $filename, with branch: $shortFileName"
 	if [ $SIMULATE -eq 1 ] ; then
 		continue
 	fi
-	git checkout master
 
-	shortFileName=$(echo "$filename" | sed 's!public/content/!!')
+	git checkout master 2> $err > $err
 	# defensive removal of existing branches, it won't remove unmerged branches!
 	gb -d "$shortFileName" 2> /dev/null || true
 	git checkout -b $shortFileName
@@ -99,7 +103,7 @@ for filename in $files ; do
 	fi
 done
 
-git checkout master
+git checkout master 2> $err > $err
 
 if [ $SIMULATE -eq 1 ] ; then
 	echo "Simulation was run. Now use -f/--force to apply."
