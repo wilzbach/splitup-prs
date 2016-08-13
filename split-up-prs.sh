@@ -17,7 +17,7 @@ STEP_BY_STEP=1 			# only submit on PR per run
 echo "Warning. This tool is in alpha-phase and should be used with great care".
 
 # parse all options
-while [[ $# -gt 1 ]]
+while [[ $# -gt 0 ]]
 do
 key="$1"
 
@@ -28,6 +28,7 @@ case $key in
     ;;
     -f|--simulate)
     	SIMULATE=0
+    	echo "Warning: you are now ending the simulation and working with real files."
     ;;
     -a|--all)
     	STEP_BY_STEP=0
@@ -67,12 +68,12 @@ for filename in $files ; do
 		continue
 	fi
 
-	git checkout master
 	echo "Adding: $filename"
 
-	if [ $SIMULATE ] ; then
+	if [ $SIMULATE -eq 1 ] ; then
 		continue
 	fi
+	git checkout master
 
 	shortFileName=$(echo "$filename" | sed 's!public/content/!!')
 	# defensive removal of existing branches, it won't remove unmerged branches!
@@ -81,7 +82,7 @@ for filename in $files ; do
 	git add "$filename"
 
 	# commit & submit
-	commitMessage="${prefix} ${shortFileName}"
+	commitMessage="${PREFIX} ${shortFileName}"
 	git commit -m "$commitMessage"
 	git push --set-upstream origin $shortFileName
 
@@ -98,6 +99,8 @@ for filename in $files ; do
 	fi
 done
 
-if [ $SIMULATE ] ; then
+git checkout master
+
+if [ $SIMULATE -eq 1 ] ; then
 	echo "Simulation was run. Now use -f/--force to apply."
 fi
