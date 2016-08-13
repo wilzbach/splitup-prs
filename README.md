@@ -24,7 +24,7 @@ Note that to avoid merge conflicts the `index.yml` is ignored. If you start from
 you can safely submit the `index.yml` once all your major PRs were accepted.
 
 ```
-split-up-prs -p "[german]"
+splitup-prs -p "[german]"
 ```
 
 might print
@@ -38,7 +38,7 @@ Simulation was run. Now use -f/--force to apply.
 To submit these files to Github, execute
 
 ```
-split-up-prs -p "[german]" -f
+splitup-prs -p "[german]" -f
 ```
 
 This will use the CLI tool [`hub`](https://github.com/github/hub) to submit PRs
@@ -49,13 +49,13 @@ By default the tool will only process one PR per run, however once you are famil
 with the tool you can enable the batch mode with `-a` or `--all`.
 
 ```
-split-up-prs -p "[german]" -f --all
+splitup-prs -p "[german]" -f --all
 ```
 
 Help
 ----
 
-Let me know if you run into [issues](https://github.com/wilzbach/split-up-prs/issues).
+Let me know if you run into [issues](https://github.com/wilzbach/splitup-prs/issues).
 
 License
 -------

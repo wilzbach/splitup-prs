@@ -95,7 +95,7 @@ for filename in $files ; do
 
 	if [ $STEP_BY_STEP ] ; then
 		echo "step-by-step executing is activated. use -a/--all to run for all remaining."
-		exit
+		break
 	fi
 done
 
