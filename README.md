@@ -9,11 +9,16 @@ Support for splitting up more complicated PRs might come in the future.
 How to use
 ----------
 
-The tool assumes that you have forked the repo and cloned locally.
-Moreover it can only commit non-committed changes, you might want to run `git reset --soft upstream/master`.
+The tool assumes that you have forked the repo you want to submit PRs too (e.g. dlang-tour) and cloned locally. Moreover this tool can only commit non-committed changes, so you might want to run `git reset --soft upstream/master`.
 
-In the following it is assumed that you put this folder into your `$PATH` environment
-variable or have created an `alias` to it.
+You can get the bash helper by downloading it directly from Github:
+
+```sh
+wget https://raw.githubusercontent.com/wilzbach/splitup-prs/master/splitup-prs
+chmod +x splitup-prs
+```
+
+In the following it is assumed that you have created an `alias` (e.g. `alias splitup-prs="~/projects/dlang/splitup-prs/splitup-prs"` to it or have put this file into a folder of your `$PATH` environment (e.g. `/usr/local/bin`) variable.
 
 Submitting step-by-step
 -----------------------
@@ -28,7 +33,7 @@ To categorize the PRs the `-p` or `--prefix` flag is required:
 splitup-prs --prefix "[german]"
 ```
 
-might print
+This might print:
 
 ```
 Adding: public/content/de/welcome/links-documentation.md
@@ -36,7 +41,7 @@ Adding: public/content/de/welcome/run-d-program-locally.md
 Simulation was run. Now use -f/--force to apply.
 ```
 
-To submit these files to Github, execute
+Accordingly to submit these files to Github, execute:
 
 ```
 splitup-prs -p "[german]" -f
