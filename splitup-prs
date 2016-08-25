@@ -44,11 +44,6 @@ esac
 shift # past argument or value
 done
 
-if [ -z "$PREFIX" ] ; then
-    echo "Requires a prefix to be set (e.g. [german]). Use -p/--prefix".
-    exit 1
-fi
-
 # unstages everything, so we can start from scratch
 git reset master 2> $err > $err
 
@@ -72,10 +67,6 @@ fi
 for filename in $files ; do
     # for simplicity skip index.yml an
     if [ $(basename "$filename") == "index.yml" ] ; then
-        continue
-    fi
-    # ignore other unrelated changes
-    if ! grep -q "public\/content\/.*" <<< "$filename" ; then
         continue
     fi
 
