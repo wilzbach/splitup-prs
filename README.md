@@ -57,6 +57,43 @@ with the tool you can enable the batch mode with `-a` or `--all`.
 splitup-prs -f --all
 ```
 
+Using with an existing commit
+-----------------------------
+
+If you run this the first time, make a copy of your work or make a new clone of
+the repository.
+
+### A) With an commit on `master`
+
+```
+git reset --soft upstream/master
+```
+
+If you haven't added an `upstream` remote yet, you can also try
+
+```
+git reset --soft HEAD~1
+```
+
+### B) With a custom branch
+
+Change to your master branch and checkout all changes from your branch:
+
+```
+git checkout master
+git checkout my-fancy-branch -- .
+```
+
+Adding an `upstream` remote endpoint
+------------------------------------
+
+If you don't use `hub`, you need to an upstream endpoint, s.t. the program
+knows which URL to open:
+
+```
+git remote add origin git@github.com:dlang-tour/english.git
+```
+
 More features
 -------------
 
@@ -68,7 +105,6 @@ be prefixed before every PR. Example:
 ```
 splitup-prs -p "[german]"
 ```
-
 
 Help
 ----
