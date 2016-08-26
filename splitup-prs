@@ -70,9 +70,6 @@ if [ $hubInstalled -eq 0 ] ; then
         UPSTREAM_REMOTE_REPO="upstream"
         UPSTREAM_REPO=$(git remote -v | grep 'upstream' | grep 'push' | grep -ohP -m 1 '(?<=:)([^.]*)' | sed 's!^/!!' | tr -d '/n')
         echo "Detected upstream repo is: ${UPSTREAM_REPO} (please use 'hub' or report an issue if this is not correct)"
-    else
-        echo "Please set an upstream repository (git remote add origin git@github.com:dlang-tour/english.git) or install 'hub'".
-        exit 1
     fi
 fi
 
@@ -111,8 +108,10 @@ for filename in $files ; do
     if [ $hubInstalled -eq 0 ] ; then
         $HUB_PROGRAM pull-request -m "$commitMessage"
     else
-        # this should be cross-platform, but it's not tested
-        xdg-open "https://github.com/$UPSTREAM_REPO/compare/$UPSTREAM_BRANCH...$gitUser:$shortFileName"
+        if [ -z "$UPSTREAM_REPO" ] ; then
+            # this should be cross-platform, but it's not tested
+            xdg-open "https://github.com/$UPSTREAM_REPO/compare/$UPSTREAM_BRANCH...$gitUser:$shortFileName"
+        fi
     fi
 
     if [ $STEP_BY_STEP -eq 1 ] ; then
@@ -123,6 +122,13 @@ done
 
 git checkout master 2> $err > $err
 
+if [ -z "$UPSTREAM_REPO" ] ; then
+    echo ""
+    echo "Warning: neither hub is installed nor an upstream remote endpoint is set"
+    echo "Please consider installing hub or setting a remote endpoint (git remote add origin git@github.com:dlang-tour/english.git)"
+fi
+
 if [ $SIMULATE -eq 1 ] ; then
+    echo ""
     echo "Simulation was run. Now use -f/--force to apply."
 fi
