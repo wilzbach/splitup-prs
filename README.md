@@ -1,5 +1,5 @@
-Split up PRs (alpha version)
-============
+Split up changes into PRs (alpha version)
+=========================================
 
 Simple tool to split up changes of files in batches of PRs.
 Note that this is for the very simple case if every change touches a separate file.
@@ -71,11 +71,15 @@ the repository.
 
 ### A) With an commit on `master`
 
+Simply reset your changes to the the ones of the `upstream` branch.
+Warning: this will remove your new commits, but not the changes.
+
 ```
 git reset --soft upstream/master
 ```
 
-If you haven't added an `upstream` remote yet, you can also try
+If you haven't added an `upstream` remote yet, you can also try to remove the commits directly.
+For example to remove one commit, but keep the changes run:
 
 ```
 git reset --soft HEAD~1
