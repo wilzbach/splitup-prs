@@ -10,8 +10,8 @@
 PREFIX=""                           # prefix tag to use for commit and PR message
 SIMULATE=1                          # only show which files would be submitted
 STEP_BY_STEP=1                      # only submit on PR per run
-UPSTREAM_REPO="stonemaster/dlang-tour"   # upstream repository
 UPSTREAM_BRANCH="master"            # upstream branch
+HUB_PROGRAM="hub"                   # tool to submit pull request
 
 # for debugging:
 #set -uexo
@@ -58,10 +58,22 @@ fi
 files=$(echo "${files}" | tr ' ' '\n' | xargs -I {} find {} -type f)
 
 # using the CLI tool hub is the most convenient option, otherwise we will show a URL
-hubInstalled=$(which $program 2>/dev/null | grep -v "not found" | wc -l)
+hubInstalled=$(which "$HUB_PROGRAM" 2>/dev/null | grep -v "not found" | wc -l)
 if [ ! $hubInstalled ] ; then
     # gets your github username, might not work on every platform
     gitUser=$(git remote -v | grep origin | head | sed -E 's!.*github.com:+/+(.*)/dlang-tour.*$!\1!')
+fi
+
+# auto-detect upstream
+if [ $hubInstalled -eq 0 ] ; then
+    if git remote -v | grep -q 'upstream' ; then
+        UPSTREAM_REMOTE_REPO="upstream"
+        UPSTREAM_REPO=$(git remote -v | grep 'upstream' | grep 'push' | grep -ohP -m 1 '(?<=:)([^.]*)' | sed 's!^/!!' | tr -d '/n')
+        echo "Detected upstream repo is: ${UPSTREAM_REPO} (please use 'hub' or report an issue if this is not correct)"
+    else
+        echo "Please set an upstream repository (git remote add origin git@github.com:dlang-tour/english.git) or install 'hub'".
+        exit 1
+    fi
 fi
 
 for filename in $files ; do
@@ -74,7 +86,7 @@ for filename in $files ; do
     # for visual beauty we strip of the filename too
     shortFileName=$(echo "$filename" | sed 's!public/content/!!' | sed 's!/!_!g' | sed 's/[.].*$//')
 
-    echo "Adding file: $filename, with branch: $shortFileName"
+    echo "Adding file: ${filename} (branch: $shortFileName)"
     if [ $SIMULATE -eq 1 ] ; then
         continue
     fi
@@ -96,8 +108,8 @@ for filename in $files ; do
     git commit -m "$commitMessage"
     git push --set-upstream origin $shortFileName
 
-    if [ $hubInstalled ] ; then
-        hub pull-request -m "$commitMessage"
+    if [ $hubInstalled -eq 0 ] ; then
+        $HUB_PROGRAM pull-request -m "$commitMessage"
     else
         # this should be cross-platform, but it's not tested
         xdg-open "https://github.com/$UPSTREAM_REPO/compare/$UPSTREAM_BRANCH...$gitUser:$shortFileName"
