@@ -8,10 +8,13 @@
 # have a decent experience with git
 
 PREFIX=""                           # prefix tag to use for commit and PR message
+BRANCH_PREFIX=""                    # prefix tag to use for branch name
+GIT_MESSAGE=""                      # prefix tag to use for branch name
 SIMULATE=1                          # only show which files would be submitted
 STEP_BY_STEP=1                      # only submit on PR per run
 UPSTREAM_BRANCH="master"            # upstream branch
 HUB_PROGRAM="hub"                   # tool to submit pull request
+USE_BASENAME=0                      # how to calc the path for the auto-branch
 
 # for debugging:
 #set -uexo
@@ -29,7 +32,18 @@ case $key in
         PREFIX="$2"
         shift
     ;;
-    -f|--simulate)
+    -b|--branchprefix)
+        BRANCH_PREFIX="$2"
+        shift
+    ;;
+    -m|--message)
+        GIT_MESSAGE="$2"
+        shift
+    ;;
+    --basename)
+        USE_BASENAME=1
+    ;;
+    -f|--force)
         SIMULATE=0
         echo "Warning: you are now ending the simulation and working with real files."
     ;;
@@ -58,10 +72,11 @@ fi
 files=$(echo "${files}" | tr ' ' '\n' | xargs -I {} find {} -type f)
 
 # using the CLI tool hub is the most convenient option, otherwise we will show a URL
-hubInstalled=$(which "$HUB_PROGRAM" 2>/dev/null | grep -v "not found" | wc -l)
-if [ ! $hubInstalled ] ; then
+hubInstalled=0
+if hash $HUB_PROGRAM 2>/dev/null 1>&2 ; then
     # gets your github username, might not work on every platform
     gitUser=$(git remote -v | grep origin | head | sed -E 's!.*github.com:+/+(.*)/dlang-tour.*$!\1!')
+    hubInstalled=1
 fi
 
 # auto-detect upstream
@@ -81,17 +96,27 @@ for filename in $files ; do
 
     # there are some issues with using path as git branches, better replace them
     # for visual beauty we strip of the filename too
-    shortFileName=$(echo "$filename" | sed 's!public/content/!!' | sed 's!/!_!g' | sed 's/[.].*$//')
+    if [ $USE_BASENAME -eq 1 ] ; then
+        shortFileName=$(basename "$filename" | sed 's!/!_!g' | sed 's/[.].*$//')
+    else
+        shortFileName=$(echo "$filename" | sed 's!/!_!g' | sed 's/[.].*$//')
+    fi
+    branchName=${BRANCH_PREFIX}${shortFileName}
+    if [ -n "$GIT_MESSAGE" ] ; then
+        commitMessage=$(printf "${PREFIX} ${GIT_MESSAGE}" "$shortFileName")
+    else
+        commitMessage="${PREFIX} ${branchName}"
+    fi
 
-    echo "Adding file: ${filename} (branch: $shortFileName)"
+    echo "Adding file: ${filename} (branch: $branchName, msg:\"${commitMessage}\")"
     if [ $SIMULATE -eq 1 ] ; then
         continue
     fi
 
     git checkout master 2> $err > $err
     # defensive removal of existing branches, it won't remove unmerged branches!
-    gb -d "$shortFileName" 2> /dev/null || true
-    git checkout -b $shortFileName
+    gb -d "$branchName" 2> /dev/null || true
+    git checkout -b $branchName
 
     if [ $(git rev-parse --abbrev-ref HEAD) == "master" ] ; then
         echo "Something went wrong when creating a new branch. Does the branch already exit?"
@@ -101,16 +126,15 @@ for filename in $files ; do
     git add "$filename"
 
     # commit & submit
-    commitMessage="${PREFIX} ${shortFileName}"
     git commit -m "$commitMessage"
-    git push --set-upstream origin $shortFileName
+    git push --set-upstream origin $branchName
 
-    if [ $hubInstalled -eq 0 ] ; then
+    if [ $hubInstalled -eq 1 ] ; then
         $HUB_PROGRAM pull-request -m "$commitMessage"
     else
         if [ -z "$UPSTREAM_REPO" ] ; then
             # this should be cross-platform, but it's not tested
-            xdg-open "https://github.com/$UPSTREAM_REPO/compare/$UPSTREAM_BRANCH...$gitUser:$shortFileName"
+            xdg-open "https://github.com/$UPSTREAM_REPO/compare/$UPSTREAM_BRANCH...$gitUser:$branchName"
         fi
     fi
 
@@ -122,7 +146,7 @@ done
 
 git checkout master 2> $err > $err
 
-if [ -z "$UPSTREAM_REPO" ] ; then
+if [ -z "$UPSTREAM_REPO" ] && [ $hubInstalled -eq 0 ] ; then
     echo ""
     echo "Warning: neither hub is installed nor an upstream remote endpoint is set"
     echo "Please consider installing hub or setting a remote endpoint (git remote add origin git@github.com:dlang-tour/english.git)"
