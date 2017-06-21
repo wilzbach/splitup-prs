@@ -9,9 +9,9 @@
 
 PREFIX=""                           # prefix tag to use for commit and PR message
 BRANCH_PREFIX=""                    # prefix tag to use for branch name
-GIT_MESSAGE=""                      # prefix tag to use for branch name
+GIT_MESSAGE=""                      # prefix tag to use for the commit message
 SIMULATE=1                          # only show which files would be submitted
-STEP_BY_STEP=1                      # only submit on PR per run
+STEP_BY_STEP=1                      # only submit one PR per run
 UPSTREAM_BRANCH="master"            # upstream branch
 HUB_PROGRAM="hub"                   # tool to submit pull request
 USE_BASENAME=0                      # how to calc the path for the auto-branch
@@ -103,9 +103,9 @@ for filename in $files ; do
     fi
     branchName=${BRANCH_PREFIX}${shortFileName}
     if [ -n "$GIT_MESSAGE" ] ; then
-        commitMessage=$(printf "${PREFIX} ${GIT_MESSAGE}" "$shortFileName")
+        commitMessage=$(printf "${PREFIX} ${GIT_MESSAGE} ${shortFileName}")
     else
-        commitMessage="${PREFIX} ${branchName}"
+        commitMessage="${PREFIX} ${shortFileName}"
     fi
 
     echo "Adding file: ${filename} (branch: $branchName, msg:\"${commitMessage}\")"

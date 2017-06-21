@@ -34,7 +34,7 @@ Under the hood it parses `git status` and filters for files in `public/content`.
 Note that to avoid merge conflicts the `index.yml` is ignored. If you start from scratch
 you can safely submit the `index.yml` once all your major PRs were accepted.
 
-```
+```sh
 splitup-prs
 ```
 
@@ -48,7 +48,7 @@ Simulation was run. Now use -f/--force to apply.
 
 Accordingly to submit these files to Github, execute:
 
-```
+```sh
 splitup-prs -f
 ```
 
@@ -59,9 +59,90 @@ installed the tool.
 By default the tool will only process one PR per run, however once you are familiar
 with the tool you can enable the batch mode with `-a` or `--all`.
 
-```
+```sh
 splitup-prs -f --all
 ```
+
+Full example
+------------
+
+1) Simulation
+-------------
+
+```sh
+splitup-prs -m 'Allow examples of the D spec to be runnable:' -b "run_spec_" -p "[run-spec]"
+```
+
+2) Step by step
+-------------
+
+```sh
+splitup-prs -m 'Allow examples of the D spec to be runnable:' -b "run_spec_" -p "[run-spec]" -f
+```
+
+2) Submit all PRs
+-------------
+
+```sh
+splitup-prs -m 'Allow examples of the D spec to be runnable:' -b "run_spec_" -p "[run-spec]" -f
+```
+
+[See the result](https://github.com/dlang/dlang.org/pulls?utf8=%E2%9C%93&q=%5Brun-spec%5D).
+
+More features
+-------------
+
+### `-p`, `--prefix`
+
+To categorize the PRs the `-p` or `--prefix` flag can be given. It will
+be prefixed before every PR and commit message. Example:
+
+```sh
+splitup-prs -p "[german]"
+```
+
+### `-m`, `--message`
+
+Similar to `-p`, but applied only for the git commit message.
+It comes after the prefix, but before the file name.
+
+```sh
+splitup-prs -m "My fancy git commit message"
+```
+
+### `-b`, `--branchprefix`
+
+Allows to use a prefix before the generated branches, e.g.
+
+```sh
+splitup-prs -b "run_spec_"
+```
+
+File paths will use underscores instead of slashes.
+
+### `--basename`
+
+For all added files, only use their `basename` for the branch name and
+git commit message.
+By default, the path within the git directory is used, but with slashes
+translated to underscores. Example
+
+- file: `foo/bar/duck.md`
+- default branch name: `foo_bar_duck`
+- `--basename` branch name: `duck`
+
+Be careful with this option.
+Multiple files with the same filename will lead to errors.
+
+### `-f`, `--force`
+
+Switch from the simulation mode and do the actions in the real world.
+
+### `-a`, `--all`
+
+Don't stop after sending one PR, send all in one run.
+
+
 
 Using with an existing commit
 -----------------------------
@@ -102,18 +183,6 @@ knows which URL to open:
 
 ```
 git remote add origin git@github.com:dlang-tour/english.git
-```
-
-More features
--------------
-
-### `-p`, `--prefix`
-
-To categorize the PRs the `-p` or `--prefix` flag can be given. It will
-be prefixed before every PR. Example:
-
-```
-splitup-prs -p "[german]"
 ```
 
 Help
